@@ -1,0 +1,22 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: microservicio-capacidad
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservicio_capacidad
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    locations: classpath:db/migration
+  
+logging:
+  level:
+    root: INFO
+    com.onclass: DEBUG
