@@ -2,12 +2,14 @@ server:
   port: 8083
 
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: microservicio-capacidad
   datasource:
-    url: jdbc:mysql://localhost:3306/microservicio_capacidad
-    username: root
-    password: password
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/${DB_NAME:microservicio_capacidad}
+    username: ${DB_USER:user}
+    password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -15,6 +17,15 @@ spring:
     show-sql: false
   flyway:
     locations: classpath:db/migration
+  security:
+    user:
+      name: admin
+      password: ${ADMIN_PASSWORD:adminpassword}
+      roles: ADMIN
+
+app:
+  technology:
+    base-url: ${TECHNOLOGY_BASE_URL:http://localhost:8084}
   
 logging:
   level:
