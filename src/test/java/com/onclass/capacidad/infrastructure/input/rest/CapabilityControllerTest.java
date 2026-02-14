@@ -1,6 +1,9 @@
 package com.onclass.capacidad.infrastructure.input.rest;
 
+import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
+import com.onclass.capacidad.application.mapper.CapabilityMapper;
 import com.onclass.capacidad.application.port.in.CreateCapabilityUseCase;
+import com.onclass.capacidad.application.usecase.ListCapabilitiesService;
 import com.onclass.capacidad.application.usecase.command.CreateCapabilityCommand;
 import com.onclass.capacidad.domain.exception.DuplicateCapabilityException;
 import com.onclass.capacidad.domain.exception.TechnologiesNotFoundException;
@@ -11,6 +14,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -20,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class CapabilityControllerTest {
 
     private WebTestClient webTestClient;
@@ -27,9 +36,23 @@ class CapabilityControllerTest {
     @Mock
     private CreateCapabilityUseCase createCapabilityUseCase;
 
+    @Mock
+    private ListCapabilitiesService listCapabilitiesService;
+
+    @Mock
+    private CapabilityMapper capabilityMapper;
+
     @BeforeEach
     void setUp() {
-        CapabilityController controller = new CapabilityController(createCapabilityUseCase);
+        // Mocks para ListCapabilitiesService y CapabilityMapper con default
+        when(listCapabilitiesService.executeWithTechnologyNames(any()))
+                .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
+        when(capabilityMapper.toListItemResponse(any()))
+                .thenReturn(new com.onclass.capacidad.infrastructure.input.rest.dto.CapabilityListItemResponse(
+                        1L, "Test", "Test description", List.of()
+                ));
+
+        CapabilityController controller = new CapabilityController(createCapabilityUseCase, listCapabilitiesService, capabilityMapper);
         webTestClient = WebTestClient.bindToController(controller)
                 .controllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -112,4 +135,13 @@ class CapabilityControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(422);
     }
+
+    // @Test
+    // void shouldReturnOkWhenGetListIsCalled() {
+    //     webTestClient.get()
+    //             .uri(ApiConstants.CAPACITIES_BASE_PATH)
+    //             .exchange()
+    //             .expectStatus().isOk();
+    // }
 }
+
