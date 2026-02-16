@@ -3,6 +3,7 @@ package com.onclass.capacidad.infrastructure.output.jpa.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,7 +27,7 @@ public class CapabilityEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @OneToMany(mappedBy = "capability", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "capability", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CapabilityTechnologyEntity> technologies = new ArrayList<>();
 
     public void addTechnology(CapabilityTechnologyEntity capabilityTechnologyEntity) {
