@@ -59,7 +59,7 @@ public class TechnologyWebClientAdapter implements TechnologyCatalogPort {
         try {
             TechnologyDetailsResponse response = technologyWebClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/tecnologias/detalles")
+                            .path("/technologies/details")
                             .queryParam("ids", idsParam)
                             .build())
                     .retrieve()
@@ -72,8 +72,8 @@ public class TechnologyWebClientAdapter implements TechnologyCatalogPort {
 
             return response.technologies().stream()
                     .collect(Collectors.toMap(TechnologyDetailsResponse.TechnologyDetail::id, TechnologyDetailsResponse.TechnologyDetail::name));
-        } catch (WebClientRequestException | WebClientResponseException _) {
-            // En caso de error, retornar un mapa vacío (las tecnologías se guardarán sin nombre)
+        } catch (WebClientRequestException | WebClientResponseException e) {
+            System.err.println("Error calling technology catalog: " + e.getMessage());
             return Collections.emptyMap();
         }
     }

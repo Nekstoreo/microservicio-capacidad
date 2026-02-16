@@ -27,9 +27,6 @@ public class CapabilityTechnologyEntity {
     @Column(name = "technology_id", nullable = false)
     private Long technologyId;
 
-    @Column(name = "technology_name", nullable = false, length = 50)
-    private String technologyName;
-
     public Long getId() {
         return id;
     }
@@ -52,14 +49,6 @@ public class CapabilityTechnologyEntity {
 
     public void setTechnologyId(Long technologyId) {
         this.technologyId = technologyId;
-    }
-
-    public String getTechnologyName() {
-        return technologyName;
-    }
-
-    public void setTechnologyName(String technologyName) {
-        this.technologyName = technologyName;
     }
 }
 

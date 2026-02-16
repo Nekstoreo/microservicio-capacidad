@@ -35,12 +35,9 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
         entity.setName(capability.getName());
         entity.setDescription(capability.getDescription());
 
-        Map<Long, String> technologyInfoMap = technologyCatalogPort.findTechnologiesByIds(new HashSet<>(capability.getTechnologyIds()));
-
         for (Long technologyId : capability.getTechnologyIds()) {
             CapabilityTechnologyEntity capabilityTechnologyEntity = new CapabilityTechnologyEntity();
             capabilityTechnologyEntity.setTechnologyId(technologyId);
-            capabilityTechnologyEntity.setTechnologyName(technologyInfoMap.getOrDefault(technologyId, ""));
             entity.addTechnology(capabilityTechnologyEntity);
         }
 
@@ -68,21 +65,26 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
     @Override
     public Page<CapabilityWithTechnologies> findAllWithTechnologyNames(Pageable pageable) {
         Page<CapabilityEntity> entities = capabilityJpaRepository.findAll(pageable);
-        return entities.map(this::entityToWithTechnologyNames);
+        
+        HashSet<Long> allTechIds = new HashSet<>();
+        for (CapabilityEntity entity : entities) {
+            allTechIds.addAll(entity.getTechnologies().stream()
+                    .map(CapabilityTechnologyEntity::getTechnologyId)
+                    .toList());
+        }
+        
+        Map<Long, String> technologyNames = allTechIds.isEmpty() 
+                ? Map.of() 
+                : technologyCatalogPort.findTechnologiesByIds(allTechIds);
+        
+        return entities.map(entity -> entityToWithTechnologyNames(entity, technologyNames));
     }
 
-    private Capability entityToDomain(CapabilityEntity entity) {
-        List<Long> technologyIds = entity.getTechnologies().stream()
-                .map(CapabilityTechnologyEntity::getTechnologyId)
-                .collect(Collectors.toList());
-        return Capability.rehydrate(entity.getId(), entity.getName(), entity.getDescription(), technologyIds);
-    }
-
-    private CapabilityWithTechnologies entityToWithTechnologyNames(CapabilityEntity entity) {
+    private CapabilityWithTechnologies entityToWithTechnologyNames(CapabilityEntity entity, Map<Long, String> technologyNames) {
         List<CapabilityWithTechnologies.TechnologyInfo> techInfos = entity.getTechnologies().stream()
                 .map(tech -> new CapabilityWithTechnologies.TechnologyInfo(
                         tech.getTechnologyId(),
-                        tech.getTechnologyName()
+                        technologyNames.get(tech.getTechnologyId())
                 ))
                 .toList();
         return new CapabilityWithTechnologies(
@@ -91,5 +93,12 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
                 entity.getDescription(),
                 techInfos
         );
+    }
+
+    private Capability entityToDomain(CapabilityEntity entity) {
+        List<Long> technologyIds = entity.getTechnologies().stream()
+                .map(CapabilityTechnologyEntity::getTechnologyId)
+                .collect(Collectors.toList());
+        return Capability.rehydrate(entity.getId(), entity.getName(), entity.getDescription(), technologyIds);
     }
 }

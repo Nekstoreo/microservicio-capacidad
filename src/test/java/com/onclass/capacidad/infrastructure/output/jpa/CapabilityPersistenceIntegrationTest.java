@@ -84,7 +84,6 @@ class CapabilityPersistenceIntegrationTest {
     private CapabilityTechnologyEntity technology(Long technologyId) {
         CapabilityTechnologyEntity capabilityTechnologyEntity = new CapabilityTechnologyEntity();
         capabilityTechnologyEntity.setTechnologyId(technologyId);
-        capabilityTechnologyEntity.setTechnologyName("tech-" + technologyId);
         return capabilityTechnologyEntity;
     }
 }
