@@ -1,6 +1,8 @@
 package com.onclass.capacidad.infrastructure.input.rest;
 
 import com.onclass.capacidad.application.exception.TechnologyCatalogUnavailableException;
+import com.onclass.capacidad.application.exception.TechnologyDeletionException;
+import com.onclass.capacidad.domain.exception.CapabilityNotFoundException;
 import com.onclass.capacidad.domain.exception.DomainValidationException;
 import com.onclass.capacidad.domain.exception.DuplicateCapabilityException;
 import com.onclass.capacidad.domain.exception.TechnologiesNotFoundException;
@@ -31,8 +33,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(new ErrorResponse(ex.getMessage()));
     }
 
+    @ExceptionHandler(CapabilityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCapabilityNotFound(CapabilityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
+    }
+
     @ExceptionHandler(TechnologyCatalogUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleTechnologyCatalogUnavailable(TechnologyCatalogUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(TechnologyDeletionException.class)
+    public ResponseEntity<ErrorResponse> handleTechnologyDeletion(TechnologyDeletionException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(new ErrorResponse(ex.getMessage()));
     }
 

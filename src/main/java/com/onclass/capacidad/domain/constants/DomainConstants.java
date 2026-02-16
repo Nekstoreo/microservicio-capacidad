@@ -14,6 +14,7 @@ public final class DomainConstants {
     public static final String CAPABILITY_TECHNOLOGIES_MAX_MESSAGE = "Capability must include at most 20 technologies";
     public static final String CAPABILITY_TECHNOLOGIES_DUPLICATED_MESSAGE = "Capability technologies cannot contain duplicates";
     public static final String CAPABILITY_TECHNOLOGY_ID_INVALID_MESSAGE = "Technology id must be a positive number";
+    public static final String CAPABILITY_NOT_FOUND_MESSAGE = "Capability not found: %s";
 
     private static final String DUPLICATE_CAPABILITY_TEMPLATE = "A capability with name already exists: %s";
     private static final String TECHNOLOGIES_NOT_FOUND_TEMPLATE = "Technologies not found: %s";
