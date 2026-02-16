@@ -64,7 +64,7 @@ class CapabilityControllerTest {
                 .thenReturn(Capability.rehydrate(1L, "Backend", "Backend capability", List.of(1L, 2L, 3L)));
 
         webTestClient.post()
-                .uri(ApiConstants.CAPACITIES_BASE_PATH)
+                .uri(ApiConstants.CAPABILITIES_BASE_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("""
                         {
@@ -85,7 +85,7 @@ class CapabilityControllerTest {
     @Test
     void shouldReturnBadRequestWhenTechnologyIdsAreLessThanThree() {
         webTestClient.post()
-                .uri(ApiConstants.CAPACITIES_BASE_PATH)
+                .uri(ApiConstants.CAPABILITIES_BASE_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("""
                         {
@@ -104,7 +104,7 @@ class CapabilityControllerTest {
                 .thenThrow(new DuplicateCapabilityException("Backend"));
 
         webTestClient.post()
-                .uri(ApiConstants.CAPACITIES_BASE_PATH)
+                .uri(ApiConstants.CAPABILITIES_BASE_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("""
                         {
@@ -123,7 +123,7 @@ class CapabilityControllerTest {
                 .thenThrow(new TechnologiesNotFoundException(List.of(3L)));
 
         webTestClient.post()
-                .uri(ApiConstants.CAPACITIES_BASE_PATH)
+                .uri(ApiConstants.CAPABILITIES_BASE_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue("""
                         {
@@ -139,7 +139,7 @@ class CapabilityControllerTest {
     // @Test
     // void shouldReturnOkWhenGetListIsCalled() {
     //     webTestClient.get()
-    //             .uri(ApiConstants.CAPACITIES_BASE_PATH)
+    //             .uri(ApiConstants.CAPABILITIES_BASE_PATH)
     //             .exchange()
     //             .expectStatus().isOk();
     // }

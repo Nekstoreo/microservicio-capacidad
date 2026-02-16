@@ -29,13 +29,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 @RestController
-@RequestMapping(ApiConstants.CAPACITIES_BASE_PATH)
+@RequestMapping(ApiConstants.CAPABILITIES_BASE_PATH)
 @RequiredArgsConstructor
 public class CapabilityController {
 
@@ -62,9 +63,9 @@ public class CapabilityController {
                 .map(CapabilityResponse::fromDomain);
     }
 
-    @Operation(summary = "List capabilities", description = "List all capabilities with pagination and sorting support")
+    @Operation(summary = ApiConstants.OPENAPI_LIST_CAPABILITIES_SUMMARY, description = ApiConstants.OPENAPI_LIST_CAPABILITIES_DESCRIPTION)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Capabilities listed successfully"),
+            @ApiResponse(responseCode = "200", description = ApiConstants.OPENAPI_LIST_CAPABILITIES_SUCCESS),
             @ApiResponse(responseCode = "400", description = ApiConstants.OPENAPI_INVALID_REQUEST, content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "401", description = ApiConstants.OPENAPI_UNAUTHORIZED),
             @ApiResponse(responseCode = "403", description = ApiConstants.OPENAPI_FORBIDDEN)
@@ -77,6 +78,21 @@ public class CapabilityController {
                 .fromCallable(() -> listCapabilitiesService.executeWithTechnologyNames(pageable))
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(this::toPageResponse);
+    }
+
+    @Operation(summary = ApiConstants.OPENAPI_GET_CAPABILITIES_BULK_SUMMARY, description = ApiConstants.OPENAPI_GET_CAPABILITIES_BULK_DESCRIPTION)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = ApiConstants.OPENAPI_GET_CAPABILITIES_BULK_SUCCESS),
+            @ApiResponse(responseCode = "400", description = ApiConstants.OPENAPI_INVALID_REQUEST, content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @GetMapping(ApiConstants.BULK_PATH)
+    public Mono<List<CapabilityListItemResponse>> getBulk(@RequestParam List<Long> ids) {
+        return Mono
+                .fromCallable(() -> listCapabilitiesService.getByIdsWithTechnologyNames(ids))
+                .subscribeOn(Schedulers.boundedElastic())
+                .map(list -> list.stream()
+                        .map(capabilityMapper::toListItemResponse)
+                        .toList());
     }
 
     @SuppressWarnings("unchecked")
