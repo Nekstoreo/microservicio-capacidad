@@ -1,8 +1,6 @@
 package com.onclass.capacidad.infrastructure.output.jpa.adapter;
 
-import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
 import com.onclass.capacidad.application.port.out.CapabilityRepositoryPort;
-import com.onclass.capacidad.application.port.out.TechnologyCatalogPort;
 import com.onclass.capacidad.domain.model.Capability;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityEntity;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityTechnologyEntity;
@@ -12,9 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,7 +18,6 @@ import java.util.stream.Collectors;
 public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
 
     private final CapabilityJpaRepository capabilityJpaRepository;
-    private final TechnologyCatalogPort technologyCatalogPort;
 
     @Override
     public boolean existsByName(String name) {
@@ -63,36 +58,10 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
     }
 
     @Override
-    public Page<CapabilityWithTechnologies> findAllWithTechnologyNames(Pageable pageable) {
-        Page<CapabilityEntity> entities = capabilityJpaRepository.findAll(pageable);
-        
-        HashSet<Long> allTechIds = new HashSet<>();
-        for (CapabilityEntity entity : entities) {
-            allTechIds.addAll(entity.getTechnologies().stream()
-                    .map(CapabilityTechnologyEntity::getTechnologyId)
-                    .toList());
-        }
-        
-        Map<Long, String> technologyNames = allTechIds.isEmpty() 
-                ? Map.of() 
-                : technologyCatalogPort.findTechnologiesByIds(allTechIds);
-        
-        return entities.map(entity -> entityToWithTechnologyNames(entity, technologyNames));
-    }
-
-    private CapabilityWithTechnologies entityToWithTechnologyNames(CapabilityEntity entity, Map<Long, String> technologyNames) {
-        List<CapabilityWithTechnologies.TechnologyInfo> techInfos = entity.getTechnologies().stream()
-                .map(tech -> new CapabilityWithTechnologies.TechnologyInfo(
-                        tech.getTechnologyId(),
-                        technologyNames.get(tech.getTechnologyId())
-                ))
+    public List<Capability> findAllByIds(List<Long> ids) {
+        return capabilityJpaRepository.findAllById(ids).stream()
+                .map(this::entityToDomain)
                 .toList();
-        return new CapabilityWithTechnologies(
-                entity.getId(),
-                entity.getName(),
-                entity.getDescription(),
-                techInfos
-        );
     }
 
     private Capability entityToDomain(CapabilityEntity entity) {
