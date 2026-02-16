@@ -28,6 +28,11 @@ app:
     enabled: ${SECURITY_ENABLED:true}
   technology:
     base-url: ${TECHNOLOGY_BASE_URL:http://localhost:8084}
+  http-client:
+    credentials:
+      username: ${HTTP_CLIENT_USERNAME:admin}
+      password: ${HTTP_CLIENT_PASSWORD:adminpassword}
+
   
 logging:
   level:
