@@ -2,6 +2,7 @@ package com.onclass.capacidad.application.usecase;
 
 import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
 import com.onclass.capacidad.application.port.out.CapabilityRepositoryPort;
+import com.onclass.capacidad.application.port.out.TechnologyCatalogPort;
 import com.onclass.capacidad.domain.model.Capability;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,11 +15,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -27,6 +31,9 @@ class ListCapabilitiesServiceTest {
 
     @Mock
     private CapabilityRepositoryPort capabilityRepositoryPort;
+
+    @Mock
+    private TechnologyCatalogPort technologyCatalogPort;
 
     @InjectMocks
     private ListCapabilitiesService listCapabilitiesService;
@@ -67,27 +74,42 @@ class ListCapabilitiesServiceTest {
     @Test
     void shouldReturnCapabilitiesWithTechnologyNamesWhenRequested() {
         Pageable pageable = PageRequest.of(0, 10);
-        CapabilityWithTechnologies capWithTechs = new CapabilityWithTechnologies(
-                1L,
-                "Backend",
-                "Backend capability",
-                List.of(
-                        new CapabilityWithTechnologies.TechnologyInfo(1L, "Java"),
-                        new CapabilityWithTechnologies.TechnologyInfo(2L, "Spring")
-                )
-        );
-        Page<CapabilityWithTechnologies> expectedPage = new PageImpl<>(List.of(capWithTechs), pageable, 1);
+        Capability capability = Capability.rehydrate(1L, "Backend", "Backend capability", List.of(1L, 2L, 3L));
+        Page<Capability> expectedPage = new PageImpl<>(List.of(capability), pageable, 1);
+        Map<Long, String> techNames = Map.of(1L, "Java", 2L, "Spring", 3L, "JPA");
 
-        when(capabilityRepositoryPort.findAllWithTechnologyNames(pageable)).thenReturn(expectedPage);
+        when(capabilityRepositoryPort.findAll(pageable)).thenReturn(expectedPage);
+        when(technologyCatalogPort.findTechnologiesByIds(anySet())).thenReturn(techNames);
 
         Page<CapabilityWithTechnologies> result = listCapabilitiesService.executeWithTechnologyNames(pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
         assertEquals("Backend", result.getContent().get(0).name());
-        assertEquals(2, result.getContent().get(0).technologies().size());
+        assertEquals(3, result.getContent().get(0).technologies().size());
         assertEquals("Java", result.getContent().get(0).technologies().get(0).name());
-        verify(capabilityRepositoryPort).findAllWithTechnologyNames(pageable);
+        verify(capabilityRepositoryPort).findAll(pageable);
+        verify(technologyCatalogPort).findTechnologiesByIds(Set.of(1L, 2L, 3L));
+    }
+
+    @Test
+    void shouldReturnBulkCapabilitiesWithTechnologyNames() {
+        List<Long> ids = List.of(1L);
+        Capability capability = Capability.rehydrate(1L, "Backend", "Backend capability", List.of(1L, 2L, 3L));
+        List<Capability> capabilities = List.of(capability);
+        Map<Long, String> techNames = Map.of(1L, "Java", 2L, "Spring", 3L, "JPA");
+
+        when(capabilityRepositoryPort.findAllByIds(ids)).thenReturn(capabilities);
+        when(technologyCatalogPort.findTechnologiesByIds(anySet())).thenReturn(techNames);
+
+        List<CapabilityWithTechnologies> result = listCapabilitiesService.getByIdsWithTechnologyNames(ids);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Backend", result.get(0).name());
+        assertEquals("Java", result.get(0).technologies().get(0).name());
+        verify(capabilityRepositoryPort).findAllByIds(ids);
+        verify(technologyCatalogPort).findTechnologiesByIds(Set.of(1L, 2L, 3L));
     }
 
     @Test
