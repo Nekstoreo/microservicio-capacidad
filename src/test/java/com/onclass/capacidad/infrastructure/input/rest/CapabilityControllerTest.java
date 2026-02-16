@@ -3,6 +3,7 @@ package com.onclass.capacidad.infrastructure.input.rest;
 import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
 import com.onclass.capacidad.application.mapper.CapabilityMapper;
 import com.onclass.capacidad.application.port.in.CreateCapabilityUseCase;
+import com.onclass.capacidad.application.port.in.DeleteCapabilityUseCase;
 import com.onclass.capacidad.application.usecase.ListCapabilitiesService;
 import com.onclass.capacidad.application.usecase.command.CreateCapabilityCommand;
 import com.onclass.capacidad.domain.exception.DuplicateCapabilityException;
@@ -36,6 +37,9 @@ class CapabilityControllerTest {
     @Mock
     private CreateCapabilityUseCase createCapabilityUseCase;
 
+        @Mock
+        private DeleteCapabilityUseCase deleteCapabilityUseCase;
+
     @Mock
     private ListCapabilitiesService listCapabilitiesService;
 
@@ -52,7 +56,7 @@ class CapabilityControllerTest {
                         1L, "Test", "Test description", List.of()
                 ));
 
-        CapabilityController controller = new CapabilityController(createCapabilityUseCase, listCapabilitiesService, capabilityMapper);
+        CapabilityController controller = new CapabilityController(createCapabilityUseCase, deleteCapabilityUseCase, listCapabilitiesService, capabilityMapper);
         webTestClient = WebTestClient.bindToController(controller)
                 .controllerAdvice(new GlobalExceptionHandler())
                 .build();

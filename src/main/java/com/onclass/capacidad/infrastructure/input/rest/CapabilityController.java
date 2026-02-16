@@ -5,6 +5,7 @@ import java.util.List;
 import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
 import com.onclass.capacidad.application.mapper.CapabilityMapper;
 import com.onclass.capacidad.application.port.in.CreateCapabilityUseCase;
+import com.onclass.capacidad.application.port.in.DeleteCapabilityUseCase;
 import com.onclass.capacidad.application.usecase.ListCapabilitiesService;
 import com.onclass.capacidad.application.usecase.command.CreateCapabilityCommand;
 import com.onclass.capacidad.infrastructure.constants.ApiConstants;
@@ -25,7 +26,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,9 +43,10 @@ import reactor.core.scheduler.Schedulers;
 @RequiredArgsConstructor
 public class CapabilityController {
 
-    private final CreateCapabilityUseCase createCapabilityUseCase;
-    private final ListCapabilitiesService listCapabilitiesService;
-    private final CapabilityMapper capabilityMapper;
+        private final CreateCapabilityUseCase createCapabilityUseCase;
+        private final DeleteCapabilityUseCase deleteCapabilityUseCase;
+        private final ListCapabilitiesService listCapabilitiesService;
+        private final CapabilityMapper capabilityMapper;
 
     @Operation(summary = ApiConstants.OPENAPI_CREATE_CAPABILITY_SUMMARY, description = ApiConstants.OPENAPI_CREATE_CAPABILITY_DESCRIPTION)
     @ApiResponses(value = {
@@ -93,6 +97,23 @@ public class CapabilityController {
                 .map(list -> list.stream()
                         .map(capabilityMapper::toListItemResponse)
                         .toList());
+    }
+
+    @Operation(summary = ApiConstants.OPENAPI_DELETE_CAPABILITY_SUMMARY,
+            description = ApiConstants.OPENAPI_DELETE_CAPABILITY_DESCRIPTION)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = ApiConstants.OPENAPI_DELETE_CAPABILITY_SUCCESS),
+            @ApiResponse(responseCode = "404", description = ApiConstants.OPENAPI_CAPABILITY_NOT_FOUND,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "503", description = ApiConstants.OPENAPI_TECHNOLOGY_DELETION_FAILED,
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> delete(@PathVariable Long id) {
+        return Mono
+                .<Void>fromRunnable(() -> deleteCapabilityUseCase.execute(id))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 
     @SuppressWarnings("unchecked")
