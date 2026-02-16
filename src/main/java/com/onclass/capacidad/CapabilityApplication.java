@@ -13,10 +13,10 @@ import io.swagger.v3.oas.annotations.info.Info;
     )
 )
 @SpringBootApplication
-public class CapacidadApplication {
+public class CapabilityApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CapacidadApplication.class, args);
+		SpringApplication.run(CapabilityApplication.class, args);
 	}
 
 }
