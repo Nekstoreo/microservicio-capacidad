@@ -4,7 +4,7 @@ services:
     container_name: capacidad-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
-      MYSQL_DATABASE: ${DB_NAME:-capacity_db}
+      MYSQL_DATABASE: ${DB_NAME:-capability_db}
       MYSQL_USER: ${MYSQL_USER:-user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
     ports:

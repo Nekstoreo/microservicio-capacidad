@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-                        .pathMatchers(HttpMethod.POST, ApiConstants.CAPACITIES_BASE_PATH).hasRole("ADMIN")
+                        .pathMatchers(HttpMethod.POST, ApiConstants.CAPABILITIES_BASE_PATH).hasRole("ADMIN")
                         .anyExchange().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .build();
