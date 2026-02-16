@@ -1,6 +1,7 @@
 package com.onclass.capacidad.infrastructure.output.jpa;
 
 import com.onclass.capacidad.application.port.out.CapabilityRepositoryPort;
+import com.onclass.capacidad.application.port.out.TechnologyCatalogPort;
 import com.onclass.capacidad.domain.model.Capability;
 import com.onclass.capacidad.infrastructure.output.jpa.adapter.CapabilityJpaAdapter;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityEntity;
@@ -12,13 +13,17 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @Import(CapabilityJpaAdapter.class)
@@ -39,8 +44,13 @@ class CapabilityPersistenceIntegrationTest {
     @Autowired
     private CapabilityJpaRepository capabilityJpaRepository;
 
+    @MockitoBean
+    private TechnologyCatalogPort technologyCatalogPort;
+
     @Test
     void shouldPersistCapabilityAndTechnologyAssociation() {
+        when(technologyCatalogPort.findTechnologiesByIds(anySet())).thenReturn(Collections.emptyMap());
+
         Capability capability = Capability.create("Backend", "Backend capability", List.of(1L, 2L, 3L));
 
         Capability saved = capabilityRepositoryPort.save(capability);
@@ -74,6 +84,7 @@ class CapabilityPersistenceIntegrationTest {
     private CapabilityTechnologyEntity technology(Long technologyId) {
         CapabilityTechnologyEntity capabilityTechnologyEntity = new CapabilityTechnologyEntity();
         capabilityTechnologyEntity.setTechnologyId(technologyId);
+        capabilityTechnologyEntity.setTechnologyName("tech-" + technologyId);
         return capabilityTechnologyEntity;
     }
 }
