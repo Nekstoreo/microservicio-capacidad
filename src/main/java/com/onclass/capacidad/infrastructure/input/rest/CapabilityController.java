@@ -1,5 +1,8 @@
 package com.onclass.capacidad.infrastructure.input.rest;
 
+import java.util.List;
+
+import com.onclass.capacidad.application.dto.CapabilityWithTechnologies;
 import com.onclass.capacidad.application.mapper.CapabilityMapper;
 import com.onclass.capacidad.application.port.in.CreateCapabilityUseCase;
 import com.onclass.capacidad.application.usecase.ListCapabilitiesService;
@@ -28,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping(ApiConstants.CAPACITIES_BASE_PATH)
@@ -50,10 +55,10 @@ public class CapabilityController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public reactor.core.publisher.Mono<CapabilityResponse> create(@Valid @RequestBody CreateCapabilityRequest request) {
-        return reactor.core.publisher.Mono
+    public Mono<CapabilityResponse> create(@Valid @RequestBody CreateCapabilityRequest request) {
+        return Mono
                 .fromCallable(() -> createCapabilityUseCase.execute(new CreateCapabilityCommand(request.name(), request.description(), request.technologyIds())))
-                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic())
                 .map(CapabilityResponse::fromDomain);
     }
 
@@ -65,23 +70,23 @@ public class CapabilityController {
             @ApiResponse(responseCode = "403", description = ApiConstants.OPENAPI_FORBIDDEN)
     })
     @GetMapping
-    public reactor.core.publisher.Mono<CapabilitiesPageResponse> list(
+    public Mono<CapabilitiesPageResponse> list(
             @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return reactor.core.publisher.Mono
+        return Mono
                 .fromCallable(() -> listCapabilitiesService.executeWithTechnologyNames(pageable))
-                .subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic())
                 .map(this::toPageResponse);
     }
 
     @SuppressWarnings("unchecked")
     private CapabilitiesPageResponse toPageResponse(Page<?> page) {
         var mappedContent = ((Page<?>) page).getContent().stream()
-                .map(item -> capabilityMapper.toListItemResponse((com.onclass.capacidad.application.dto.CapabilityWithTechnologies) item))
+                .map(item -> capabilityMapper.toListItemResponse((CapabilityWithTechnologies) item))
                 .toList();
 
         return new CapabilitiesPageResponse(
-                (java.util.List<CapabilityListItemResponse>) (Object) mappedContent,
+                (List<CapabilityListItemResponse>) (Object) mappedContent,
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),
