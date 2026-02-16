@@ -5,12 +5,16 @@ import com.onclass.capacidad.domain.model.Capability;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityEntity;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityTechnologyEntity;
 import com.onclass.capacidad.infrastructure.output.jpa.repository.CapabilityJpaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -18,6 +22,7 @@ import java.util.stream.Collectors;
 public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
 
     private final CapabilityJpaRepository capabilityJpaRepository;
+    private final EntityManager entityManager;
 
     @Override
     public boolean existsByName(String name) {
@@ -62,6 +67,26 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
         return capabilityJpaRepository.findAllById(ids).stream()
                 .map(this::entityToDomain)
                 .toList();
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        capabilityJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Long> findTechnologyReferences(Collection<Long> technologyIds) {
+        if (technologyIds == null || technologyIds.isEmpty()) {
+            return Set.of();
+        }
+
+        TypedQuery<Long> query = entityManager.createQuery(
+                "SELECT DISTINCT ct.technologyId FROM CapabilityTechnologyEntity ct WHERE ct.technologyId IN :ids",
+                Long.class
+        );
+        query.setParameter("ids", technologyIds);
+
+        return Set.copyOf(query.getResultList());
     }
 
     private Capability entityToDomain(CapabilityEntity entity) {
