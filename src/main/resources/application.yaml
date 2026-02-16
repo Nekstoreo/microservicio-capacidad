@@ -24,6 +24,8 @@ spring:
       roles: ADMIN
 
 app:
+  security:
+    enabled: ${SECURITY_ENABLED:true}
   technology:
     base-url: ${TECHNOLOGY_BASE_URL:http://localhost:8084}
   
