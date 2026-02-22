@@ -1,7 +1,9 @@
 package com.onclass.capacidad.infrastructure.output.http;
 
 import com.onclass.capacidad.application.exception.TechnologyCatalogUnavailableException;
+import com.onclass.capacidad.application.exception.TechnologyDeletionException;
 import com.onclass.capacidad.application.port.out.TechnologyCatalogPort;
+import com.onclass.capacidad.application.port.out.TechnologyManagementPort;
 import com.onclass.capacidad.infrastructure.constants.ApiConstants;
 import com.onclass.capacidad.infrastructure.output.http.dto.ExistingTechnologiesResponse;
 import com.onclass.capacidad.infrastructure.output.http.dto.TechnologyDetailsResponse;
@@ -20,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class TechnologyWebClientAdapter implements TechnologyCatalogPort {
+public class TechnologyWebClientAdapter implements TechnologyCatalogPort, TechnologyManagementPort {
 
     private final WebClient technologyWebClient;
 
@@ -75,6 +77,21 @@ public class TechnologyWebClientAdapter implements TechnologyCatalogPort {
         } catch (WebClientRequestException | WebClientResponseException e) {
             System.err.println("Error calling technology catalog: " + e.getMessage());
             return Collections.emptyMap();
+        }
+    }
+
+    @Override
+    public void deleteTechnology(Long technologyId) {
+        try {
+            technologyWebClient.delete()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(ApiConstants.TECHNOLOGIES_BASE_PATH + "/{id}")
+                            .build(technologyId))
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+        } catch (WebClientRequestException | WebClientResponseException ex) {
+            throw new TechnologyDeletionException(String.format("Failed to delete technology %s", technologyId));
         }
     }
 }

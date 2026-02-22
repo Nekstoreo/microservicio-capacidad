@@ -3,6 +3,7 @@ package com.onclass.capacidad.infrastructure.constants;
 public final class ApiConstants {
 
     public static final String CAPABILITIES_BASE_PATH = "/capabilities";
+    public static final String TECHNOLOGIES_BASE_PATH = "/technologies";
 
     public static final String OPENAPI_CREATE_CAPABILITY_SUMMARY = "Create capability";
     public static final String OPENAPI_CREATE_CAPABILITY_DESCRIPTION = "Creates a capability with unique name and associated technologies";
@@ -28,6 +29,12 @@ public final class ApiConstants {
     public static final String OPENAPI_LIST_CAPABILITIES_SUMMARY = "List capabilities";
     public static final String OPENAPI_LIST_CAPABILITIES_DESCRIPTION = "List all capabilities with pagination and sorting support";
     public static final String OPENAPI_LIST_CAPABILITIES_SUCCESS = "Capabilities listed successfully";
+
+    public static final String OPENAPI_DELETE_CAPABILITY_SUMMARY = "Delete capability";
+    public static final String OPENAPI_DELETE_CAPABILITY_DESCRIPTION = "Delete a capability and its orphan technologies";
+    public static final String OPENAPI_DELETE_CAPABILITY_SUCCESS = "Capability deleted successfully";
+    public static final String OPENAPI_CAPABILITY_NOT_FOUND = "Capability not found";
+    public static final String OPENAPI_TECHNOLOGY_DELETION_FAILED = "Failed to delete associated technologies";
 
     public static final String OPENAPI_GET_CAPABILITIES_BULK_SUMMARY = "Get capabilities by IDs";
     public static final String OPENAPI_GET_CAPABILITIES_BULK_DESCRIPTION = "Get details of multiple capabilities by their IDs";
