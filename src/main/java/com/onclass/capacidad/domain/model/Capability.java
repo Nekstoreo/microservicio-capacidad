@@ -2,10 +2,12 @@ package com.onclass.capacidad.domain.model;
 
 import com.onclass.capacidad.domain.constants.DomainConstants;
 import com.onclass.capacidad.domain.exception.DomainValidationException;
+import lombok.Getter;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 
+@Getter
 public class Capability {
 
     private final Long id;
@@ -80,19 +82,4 @@ public class Capability {
         return List.copyOf(technologyIds);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public List<Long> getTechnologyIds() {
-        return technologyIds;
-    }
 }

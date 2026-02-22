@@ -16,10 +16,10 @@ public class WebClientConfig {
 
     @Bean
     public WebClient technologyWebClient() {
-        String credentials = applicationProperties.getHttpClient().getCredentials().getUsername() + ":" 
-                           + applicationProperties.getHttpClient().getCredentials().getPassword();
+        String credentials = applicationProperties.getHttpClient().getCredentials().getUsername() + ":"
+                + applicationProperties.getHttpClient().getCredentials().getPassword();
         String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
-        
+
         return WebClient.builder()
                 .baseUrl(applicationProperties.getTechnology().getBaseUrl())
                 .defaultHeader("Authorization", "Basic " + encodedCredentials)
