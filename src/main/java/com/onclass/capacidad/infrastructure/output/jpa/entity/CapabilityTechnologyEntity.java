@@ -51,3 +51,4 @@ public class CapabilityTechnologyEntity {
         this.technologyId = technologyId;
     }
 }
+

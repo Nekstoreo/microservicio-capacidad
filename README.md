@@ -44,7 +44,7 @@ El servicio estará disponible en `http://localhost:8083`
 
 ### 4. Documentación API
 
-**OpenAPI (Swagger):** `http://localhost:8084/swagger-ui.html`
+**OpenAPI (Swagger):** `http://localhost:8083/swagger-ui.html`
 
 **Credenciales predeterminadas:**
 

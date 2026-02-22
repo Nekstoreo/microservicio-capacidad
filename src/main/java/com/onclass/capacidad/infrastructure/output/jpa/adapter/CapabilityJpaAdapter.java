@@ -6,9 +6,12 @@ import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityEntity;
 import com.onclass.capacidad.infrastructure.output.jpa.entity.CapabilityTechnologyEntity;
 import com.onclass.capacidad.infrastructure.output.jpa.repository.CapabilityJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -39,5 +42,32 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
                 .toList();
 
         return Capability.rehydrate(saved.getId(), saved.getName(), saved.getDescription(), technologyIds);
+    }
+
+    @Override
+    public Capability findById(Long id) {
+        return capabilityJpaRepository.findById(id)
+                .map(this::entityToDomain)
+                .orElse(null);
+    }
+
+    @Override
+    public Page<Capability> findAll(Pageable pageable) {
+        Page<CapabilityEntity> entities = capabilityJpaRepository.findAll(pageable);
+        return entities.map(this::entityToDomain);
+    }
+
+    @Override
+    public List<Capability> findAllByIds(List<Long> ids) {
+        return capabilityJpaRepository.findAllById(ids).stream()
+                .map(this::entityToDomain)
+                .toList();
+    }
+
+    private Capability entityToDomain(CapabilityEntity entity) {
+        List<Long> technologyIds = entity.getTechnologies().stream()
+                .map(CapabilityTechnologyEntity::getTechnologyId)
+                .collect(Collectors.toList());
+        return Capability.rehydrate(entity.getId(), entity.getName(), entity.getDescription(), technologyIds);
     }
 }
