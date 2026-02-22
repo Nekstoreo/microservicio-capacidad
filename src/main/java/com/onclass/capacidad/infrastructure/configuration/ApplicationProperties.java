@@ -8,5 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "app")
 public class ApplicationProperties {
-    // Propiedades específicas del microservicio Capacidad
+
+    private Technology technology = new Technology();
+
+    @Data
+    public static class Technology {
+        private String baseUrl;
+    }
 }
