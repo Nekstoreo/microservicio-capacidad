@@ -1,6 +1,8 @@
 package com.onclass.capacidad.infrastructure.adapters.persistence;
 
 import com.onclass.capacidad.domain.model.Capability;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
 import com.onclass.capacidad.domain.spi.CapabilityRepositoryPort;
 import com.onclass.capacidad.infrastructure.entities.CapabilityEntity;
 import com.onclass.capacidad.infrastructure.entities.CapabilityTechnologyEntity;
@@ -9,7 +11,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -56,9 +60,31 @@ public class CapabilityJpaAdapter implements CapabilityRepositoryPort {
     }
 
     @Override
-    public Page<Capability> findAll(Pageable pageable) {
-        Page<CapabilityEntity> entities = capabilityJpaRepository.findAll(pageable);
-        return entities.map(this::entityToDomain);
+    public DomainPage<Capability> findAll(DomainPageRequest pageRequest) {
+        Sort.Direction direction = "desc".equalsIgnoreCase(pageRequest.sortDirection())
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pageRequest.page(), pageRequest.size(), Sort.by(direction, pageRequest.sortBy()));
+
+        Sort.Order technologyCountOrder = pageable.getSort().getOrderFor("technologyCount");
+        Page<CapabilityEntity> entities;
+        if (technologyCountOrder != null) {
+            entities = technologyCountOrder.isDescending()
+                    ? capabilityJpaRepository.findAllOrderByTechnologyCountDesc(pageable)
+                    : capabilityJpaRepository.findAllOrderByTechnologyCountAsc(pageable);
+        } else {
+            entities = capabilityJpaRepository.findAll(pageable);
+        }
+
+        return new DomainPage<>(
+                entities.getContent().stream().map(this::entityToDomain).toList(),
+                entities.getNumber(),
+                entities.getSize(),
+                entities.getTotalElements(),
+                entities.getTotalPages(),
+                entities.hasNext(),
+                entities.hasPrevious()
+        );
     }
 
     @Override

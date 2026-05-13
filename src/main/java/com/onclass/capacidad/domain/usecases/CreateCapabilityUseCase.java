@@ -7,19 +7,21 @@ import com.onclass.capacidad.domain.exception.TechnologiesNotFoundException;
 import com.onclass.capacidad.domain.model.Capability;
 import com.onclass.capacidad.domain.spi.CapabilityRepositoryPort;
 import com.onclass.capacidad.domain.spi.TechnologyCatalogPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-@Service
-@RequiredArgsConstructor
 public class CreateCapabilityUseCase implements CreateCapabilityServicePort {
 
     private final CapabilityRepositoryPort capabilityRepositoryPort;
     private final TechnologyCatalogPort technologyCatalogPort;
+
+    public CreateCapabilityUseCase(CapabilityRepositoryPort capabilityRepositoryPort,
+                                   TechnologyCatalogPort technologyCatalogPort) {
+        this.capabilityRepositoryPort = capabilityRepositoryPort;
+        this.technologyCatalogPort = technologyCatalogPort;
+    }
 
     @Override
     public Capability execute(CreateCapabilityCommand command) {

@@ -6,9 +6,10 @@ import com.onclass.capacidad.application.dtos.responses.CapabilityListItemRespon
 import com.onclass.capacidad.application.mappers.CapabilityMapper;
 import com.onclass.capacidad.domain.exception.DuplicateCapabilityException;
 import com.onclass.capacidad.domain.model.Capability;
-import com.onclass.capacidad.domain.usecases.CreateCapabilityUseCase;
-import com.onclass.capacidad.domain.usecases.DeleteCapabilityUseCase;
-import com.onclass.capacidad.domain.usecases.ListCapabilitiesUseCase;
+import com.onclass.capacidad.domain.api.CreateCapabilityServicePort;
+import com.onclass.capacidad.domain.api.DeleteCapabilityServicePort;
+import com.onclass.capacidad.domain.api.ListCapabilitiesServicePort;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
 import com.onclass.capacidad.infrastructure.constants.ApiConstants;
 import com.onclass.capacidad.infrastructure.exceptionhandler.GlobalExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.web.ReactivePageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -34,13 +33,13 @@ class CapabilityControllerTest {
     private WebTestClient webTestClient;
 
     @Mock
-    private CreateCapabilityUseCase createCapabilityUseCase;
+    private CreateCapabilityServicePort createCapabilityUseCase;
 
     @Mock
-    private DeleteCapabilityUseCase deleteCapabilityUseCase;
+    private DeleteCapabilityServicePort deleteCapabilityUseCase;
 
     @Mock
-    private ListCapabilitiesUseCase listCapabilitiesUseCase;
+    private ListCapabilitiesServicePort listCapabilitiesUseCase;
 
     @Mock
     private CapabilityMapper capabilityMapper;
@@ -52,8 +51,6 @@ class CapabilityControllerTest {
     void setUp() {
         webTestClient = WebTestClient.bindToController(capabilityController)
                 .controllerAdvice(new GlobalExceptionHandler())
-                .argumentResolvers(
-                        config -> config.addCustomResolver(new ReactivePageableHandlerMethodArgumentResolver()))
                 .build();
     }
 
@@ -95,7 +92,7 @@ class CapabilityControllerTest {
     @DisplayName("Should return 200 OK when listing capabilities")
     void shouldReturn200OKWhenListing() {
         CapabilityWithTechnologies dto = new CapabilityWithTechnologies(1L, "Java", "Desc", List.of());
-        when(listCapabilitiesUseCase.executeWithTechnologyNames(any())).thenReturn(new PageImpl<>(List.of(dto)));
+        when(listCapabilitiesUseCase.executeWithTechnologyNames(any())).thenReturn(new DomainPage<>(List.of(dto), 0, 20, 1, 1, false, false));
         when(capabilityMapper.toListItemResponse(any()))
                 .thenReturn(new CapabilityListItemResponse(1L, "Java", "Desc", List.of()));
 

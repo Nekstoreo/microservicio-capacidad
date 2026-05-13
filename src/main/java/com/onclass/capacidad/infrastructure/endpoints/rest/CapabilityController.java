@@ -8,9 +8,11 @@ import com.onclass.capacidad.application.dtos.responses.CapabilityListItemRespon
 import com.onclass.capacidad.application.dtos.responses.CapabilityResponse;
 import com.onclass.capacidad.application.dtos.responses.ErrorResponse;
 import com.onclass.capacidad.application.mappers.CapabilityMapper;
-import com.onclass.capacidad.domain.usecases.CreateCapabilityUseCase;
-import com.onclass.capacidad.domain.usecases.DeleteCapabilityUseCase;
-import com.onclass.capacidad.domain.usecases.ListCapabilitiesUseCase;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
+import com.onclass.capacidad.domain.api.CreateCapabilityServicePort;
+import com.onclass.capacidad.domain.api.DeleteCapabilityServicePort;
+import com.onclass.capacidad.domain.api.ListCapabilitiesServicePort;
 import com.onclass.capacidad.infrastructure.constants.ApiConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,10 +21,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,9 +34,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CapabilityController {
 
-    private final CreateCapabilityUseCase createCapabilityUseCase;
-    private final DeleteCapabilityUseCase deleteCapabilityUseCase;
-    private final ListCapabilitiesUseCase listCapabilitiesService;
+    private final CreateCapabilityServicePort createCapabilityUseCase;
+    private final DeleteCapabilityServicePort deleteCapabilityUseCase;
+    private final ListCapabilitiesServicePort listCapabilitiesService;
     private final CapabilityMapper capabilityMapper;
 
     @Operation(summary = ApiConstants.OPENAPI_CREATE_CAPABILITY_SUMMARY, description = ApiConstants.OPENAPI_CREATE_CAPABILITY_DESCRIPTION)
@@ -69,10 +67,16 @@ public class CapabilityController {
     })
     @GetMapping
     public Mono<CapabilitiesPageResponse> list(
-            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) {
         return Mono
-                .fromCallable(() -> listCapabilitiesService.executeWithTechnologyNames(pageable))
+                .fromCallable(() -> {
+                    DomainPageRequest pageRequest = new DomainPageRequest(page, size, sortBy, sortDir);
+                    return listCapabilitiesService.executeWithTechnologyNames(pageRequest);
+                })
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(this::toPageResponse);
     }
@@ -127,18 +131,17 @@ public class CapabilityController {
                 .subscribeOn(Schedulers.boundedElastic());
     }
 
-    @SuppressWarnings("unchecked")
-    private CapabilitiesPageResponse toPageResponse(Page<?> page) {
-        var mappedContent = ((Page<?>) page).getContent().stream()
-                .map(item -> capabilityMapper.toListItemResponse((CapabilityWithTechnologies) item))
+    private CapabilitiesPageResponse toPageResponse(DomainPage<CapabilityWithTechnologies> page) {
+        var mappedContent = page.content().stream()
+                .map(capabilityMapper::toListItemResponse)
                 .toList();
 
         return new CapabilitiesPageResponse(
                 mappedContent,
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages(),
+                page.pageNumber(),
+                page.pageSize(),
+                page.totalElements(),
+                page.totalPages(),
                 page.hasNext(),
                 page.hasPrevious()
         );

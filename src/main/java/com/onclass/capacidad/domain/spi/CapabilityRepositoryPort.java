@@ -1,8 +1,8 @@
 package com.onclass.capacidad.domain.spi;
 
 import com.onclass.capacidad.domain.model.Capability;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +16,7 @@ public interface CapabilityRepositoryPort {
 
     Capability findById(Long id);
 
-    Page<Capability> findAll(Pageable pageable);
+    DomainPage<Capability> findAll(DomainPageRequest pageRequest);
 
     List<Capability> findAllByIds(List<Long> ids);
 

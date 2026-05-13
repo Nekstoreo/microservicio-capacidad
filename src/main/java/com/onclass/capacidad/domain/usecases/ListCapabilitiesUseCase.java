@@ -3,35 +3,47 @@ package com.onclass.capacidad.domain.usecases;
 import com.onclass.capacidad.application.dtos.CapabilityWithTechnologies;
 import com.onclass.capacidad.domain.api.ListCapabilitiesServicePort;
 import com.onclass.capacidad.domain.model.Capability;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
 import com.onclass.capacidad.domain.spi.CapabilityRepositoryPort;
 import com.onclass.capacidad.domain.spi.TechnologyCatalogPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
 public class ListCapabilitiesUseCase implements ListCapabilitiesServicePort {
 
     private final CapabilityRepositoryPort capabilityRepositoryPort;
     private final TechnologyCatalogPort technologyCatalogPort;
 
-    @Override
-    public Page<Capability> execute(Pageable pageable) {
-        return capabilityRepositoryPort.findAll(pageable);
+    public ListCapabilitiesUseCase(CapabilityRepositoryPort capabilityRepositoryPort,
+                                   TechnologyCatalogPort technologyCatalogPort) {
+        this.capabilityRepositoryPort = capabilityRepositoryPort;
+        this.technologyCatalogPort = technologyCatalogPort;
     }
 
-    public Page<CapabilityWithTechnologies> executeWithTechnologyNames(Pageable pageable) {
-        Page<Capability> page = capabilityRepositoryPort.findAll(pageable);
-        Map<Long, String> technologyNames = fetchTechnologyNames(page.getContent());
-        return page.map(capability -> toDtoWithNames(capability, technologyNames));
+    @Override
+    public DomainPage<Capability> execute(DomainPageRequest pageRequest) {
+        return capabilityRepositoryPort.findAll(pageRequest);
+    }
+
+    public DomainPage<CapabilityWithTechnologies> executeWithTechnologyNames(DomainPageRequest pageRequest) {
+        DomainPage<Capability> page = capabilityRepositoryPort.findAll(pageRequest);
+        Map<Long, String> technologyNames = fetchTechnologyNames(page.content());
+        List<CapabilityWithTechnologies> mappedContent = page.content().stream()
+                .map(capability -> toDtoWithNames(capability, technologyNames))
+                .toList();
+        return new DomainPage<>(
+                mappedContent,
+                page.pageNumber(),
+                page.pageSize(),
+                page.totalElements(),
+                page.totalPages(),
+                page.hasNext(),
+                page.hasPrevious()
+        );
     }
 
     public List<CapabilityWithTechnologies> getByIdsWithTechnologyNames(List<Long> ids) {

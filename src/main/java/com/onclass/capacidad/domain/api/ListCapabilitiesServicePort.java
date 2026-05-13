@@ -1,10 +1,19 @@
 package com.onclass.capacidad.domain.api;
 
+import com.onclass.capacidad.application.dtos.CapabilityWithTechnologies;
 import com.onclass.capacidad.domain.model.Capability;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
+
+import java.util.List;
 
 public interface ListCapabilitiesServicePort {
 
-    Page<Capability> execute(Pageable pageable);
+    DomainPage<Capability> execute(DomainPageRequest pageRequest);
+
+    DomainPage<CapabilityWithTechnologies> executeWithTechnologyNames(DomainPageRequest pageRequest);
+
+    List<CapabilityWithTechnologies> getByIdsWithTechnologyNames(List<Long> ids);
+
+    CapabilityWithTechnologies getByIdWithTechnologyNames(Long id);
 }

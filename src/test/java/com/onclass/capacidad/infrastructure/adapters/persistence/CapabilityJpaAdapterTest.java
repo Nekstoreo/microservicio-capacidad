@@ -1,6 +1,8 @@
 package com.onclass.capacidad.infrastructure.adapters.persistence;
 
 import com.onclass.capacidad.domain.model.Capability;
+import com.onclass.capacidad.domain.models.pagination.DomainPage;
+import com.onclass.capacidad.domain.models.pagination.DomainPageRequest;
 import com.onclass.capacidad.infrastructure.entities.CapabilityEntity;
 import com.onclass.capacidad.infrastructure.entities.CapabilityTechnologyEntity;
 import com.onclass.capacidad.infrastructure.repositories.CapabilityJpaRepository;
@@ -12,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
@@ -103,13 +104,13 @@ class CapabilityJpaAdapterTest {
     @Test
     @DisplayName("Should find all capabilities by page")
     void shouldFindAllPage() {
-        PageRequest pageable = PageRequest.of(0, 10);
-        when(repository.findAll(pageable)).thenReturn(new PageImpl<>(List.of()));
+        DomainPageRequest pageRequest = new DomainPageRequest(0, 10, "name", "asc");
+        when(repository.findAll(any(org.springframework.data.domain.Pageable.class))).thenReturn(new PageImpl<>(List.of()));
 
-        Page<Capability> result = adapter.findAll(pageable);
+        DomainPage<Capability> result = adapter.findAll(pageRequest);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.content().isEmpty());
     }
 
     @Test
